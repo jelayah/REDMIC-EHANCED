@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useGame } from '../context/GameContext';
-import { AlbumChartEntry } from '../types';
+import { AlbumChartEntry, ChartHistory } from '../types';
 import SpotifyIcon from './icons/SpotifyIcon';
 import ChevronDownIcon from './icons/ChevronDownIcon';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';
@@ -60,7 +59,8 @@ const SpotifyTopAlbumsView: React.FC = () => {
         return `Week of ${dateObj.toLocaleString('en-US', { month: 'short' })} ${dateObj.getDate()}`;
     };
     
-    const longestAlbum = Object.entries(albumChartHistory).reduce((longest, [id, history]) => {
+    // Fix: Explicitly cast Object.entries results to include correctly typed history objects to resolve property access errors
+    const longestAlbum = (Object.entries(albumChartHistory) as [string, ChartHistory[string]][]).reduce((longest, [id, history]) => {
         if (!longest || history.weeksOnChart > longest.history.weeksOnChart) {
             const album = billboardTopAlbums.find(a => a.uniqueId === id) || gameState.npcAlbums.find(a => a.uniqueId === id);
             if (album) return { album, history };

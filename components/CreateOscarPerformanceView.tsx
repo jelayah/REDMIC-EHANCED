@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
 import { Video, Song } from '../types';
@@ -56,7 +55,8 @@ const CreateOscarPerformanceView: React.FC = () => {
 
         const newVideo: Video = {
             id: crypto.randomUUID(),
-            songId: Array.from(selectedSongIds)[0],
+            // Fix: Added explicit type cast for songId to resolve potential assignment error from unknown/undefined array access
+            songId: Array.from(selectedSongIds)[0] as string,
             title: videoTitle,
             type: 'Live Performance',
             views: 0,

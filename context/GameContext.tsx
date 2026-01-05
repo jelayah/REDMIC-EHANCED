@@ -1,8 +1,8 @@
-import React, { createContext, useReducer, useContext, ReactNode, useEffect, useState, useMemo } from 'react';
+import * as React from 'react';
+import { createContext, useReducer, useContext, useEffect, useMemo } from 'react';
 import { db } from '../db/db';
-import type { GameState, GameAction, Email, NpcSong, ChartEntry, ChartHistory, ArtistData, Artist, Group, Song, LabelSubmission, Contract, Release, XUser, XPost, XTrend, XChat, CustomLabel, PopBaseOffer, NpcAlbum, AlbumChartEntry, RedMicProState, GrammyCategory, GrammyAward, GrammyContender, OscarCategory, OscarAward, OscarContender, OnlyFansProfile, OnlyFansPost, XSuspensionStatus, SoundtrackAlbum, SoundtrackTrack, Manager, SecurityTeam, Label, VoguePhotoshoot, FeatureOffer, VmaAward, VmaCategory } from '../types';
-import { INITIAL_MONEY, STREAM_INCOME_MULTIPLIER, SUBSCRIBER_THRESHOLD_STORE, VIEW_INCOME_MULTIPLIER, NPC_ARTIST_NAMES, NPC_SONG_ADJECTIVES, NPC_SONG_NOUNS, NPC_COVER_ART, LABELS, PLAYLIST_PITCH_COST, PLAYLIST_PITCH_SUCCESS_RATE, PLAYLIST_BOOST_MULTIPLIER, PLAYLIST_BOOST_WEEKS, GENRES, MANAGERS, SECURITY_TEAMS, GIGS } from '../constants';
-import { generateWeeklyXContent } from '../utils/xContentGenerator';
+import type { GameState, GameAction, Email, NpcSong, ChartEntry, ChartHistory, ArtistData, Artist, Group, Song, LabelSubmission, Contract, Release, XUser, XPost, XTrend, XChat, NpcAlbum, AlbumChartEntry, OnlyFansProfile, OnlyFansPost } from '../types';
+import { INITIAL_MONEY, STREAM_INCOME_MULTIPLIER, NPC_ARTIST_NAMES, NPC_SONG_ADJECTIVES, NPC_SONG_NOUNS, NPC_COVER_ART, LABELS, GENRES, MANAGERS } from '../constants';
 import { REAL_WORLD_DISCOGRAPHIES } from '../realWorldDiscographies';
 
 export const formatNumber = (num: number): string => {
@@ -185,46 +185,163 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
                 ...initialState, careerMode: 'solo', soloArtist: artist, activeArtistId: artist.id, artistsData: { [artist.id]: { ...initialArtistData, inbox: [welcomeEmail], xUsers: [playerXUser, tmzUser] } }, date: startDate, npcs: generateNpcs(600)
             };
         }
+        case 'START_GROUP_GAME': {
+            const { group, startYear } = action.payload;
+            const startDate = { week: 1, year: startYear };
+            const newArtistsData: { [artistId: string]: ArtistData } = {};
+            newArtistsData[group.id] = { ...initialArtistData, money: INITIAL_MONEY, xUsers: [tmzUser] };
+            group.members.forEach(m => { newArtistsData[m.id] = { ...initialArtistData, money: 25000, xUsers: [tmzUser] }; });
+            return { ...initialState, careerMode: 'group', group, activeArtistId: group.id, artistsData: newArtistsData, date: startDate, npcs: generateNpcs(600) };
+        }
         case 'CHANGE_VIEW': return { ...state, currentView: action.payload };
         case 'CHANGE_TAB': return { ...state, activeTab: action.payload };
+        case 'SWITCH_YOUTUBE_CHANNEL': return { ...state, activeYoutubeChannel: action.payload };
         case 'CHANGE_ACTIVE_ARTIST': return { ...state, activeArtistId: action.payload };
         case 'PROGRESS_WEEK': {
             const newWeek = state.date.week + 1;
             const newYear = state.date.year + (newWeek > 52 ? 1 : 0);
-            return { ...state, date: { week: newWeek > 52 ? 1 : newWeek, year: newYear } };
+            const newDate = { week: newWeek > 52 ? 1 : newWeek, year: newYear };
+            const updatedArtistsData = { ...state.artistsData };
+            for (const id in updatedArtistsData) {
+                const data = updatedArtistsData[id];
+                data.hype = Math.max(0, data.hype - 5);
+                data.money += data.songs.reduce((acc, s) => acc + (s.lastWeekStreams * STREAM_INCOME_MULTIPLIER), 0);
+            }
+            return { ...state, date: newDate, artistsData: updatedArtistsData };
         }
         case 'RECORD_SONG': {
             if (!state.activeArtistId) return state;
-            const data = state.artistsData[state.activeArtistId];
-            return { ...state, artistsData: { ...state.artistsData, [state.activeArtistId]: { ...data, money: data.money - action.payload.cost, songs: [...data.songs, action.payload.song] } } };
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: {
+                        ...activeData,
+                        money: activeData.money - action.payload.cost,
+                        songs: [...activeData.songs, action.payload.song],
+                    }
+                }
+            };
         }
         case 'RELEASE_PROJECT': {
             if (!state.activeArtistId) return state;
-            const data = state.artistsData[state.activeArtistId];
-            const { release } = action.payload;
-            return { ...state, artistsData: { ...state.artistsData, [state.activeArtistId]: { ...data, releases: [...data.releases, release], songs: data.songs.map(s => release.songIds.includes(s.id) ? { ...s, isReleased: true, releaseId: release.id } : s), hype: Math.min(100, data.hype + 20) } } };
-        }
-        case 'CREATE_FALLON_VIDEO': {
-            if (!state.activeArtistId || !state.activeFallonOffer) return state;
-            const { video, songId } = action.payload;
             const activeData = state.artistsData[state.activeArtistId];
-            const artistProfile = allPlayerArtistsAndGroups.find(a => a.id === state.activeArtistId);
-            if (!artistProfile) return state;
-            const updatedData: ArtistData = { ...activeData, videos: [...activeData.videos, video], hype: Math.min(100, activeData.hype + 25) };
-            let postContent = '';
-            if (video.type === 'Live Performance' && songId) {
-                const song = activeData.songs.find(s => s.id === songId);
-                if (song) postContent = `${artistProfile.name} delivers an incredible performance of '${song.title}' on Jimmy Fallon.`;
-            } else if (video.type === 'Interview') {
-                const release = activeData.releases.find(r => r.id === state.activeFallonOffer!.releaseId);
-                const interviewTropes = [`reveals on Jimmy Fallon that they want to do more acting...`, `teases a new sound for their next project...` ];
-                postContent = `${artistProfile.name} ${interviewTropes[Math.floor(Math.random() * interviewTropes.length)]}`;
-            }
-            if (postContent) updatedData.xPosts.unshift({ id: crypto.randomUUID(), authorId: 'popbase', content: postContent, likes: 1000, retweets: 200, views: 5000, date: state.date });
-            let newState = { ...state, artistsData: { ...state.artistsData, [state.activeArtistId]: updatedData } };
-            if (state.activeFallonOffer.offerType === 'both' && state.activeFallonOffer.step === 'performance') newState.activeFallonOffer = { ...state.activeFallonOffer, step: 'interview' as const };
-            else newState.activeFallonOffer = null;
-            return newState;
+            const { release } = action.payload;
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: {
+                        ...activeData,
+                        releases: [...activeData.releases, release],
+                        songs: activeData.songs.map(s => release.songIds.includes(s.id) ? { ...s, isReleased: true, releaseId: release.id } : s),
+                        hype: Math.min(100, activeData.hype + 20)
+                    }
+                }
+            };
+        }
+        case 'SIGN_CONTRACT': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: { ...activeData, contract: action.payload.contract }
+                }
+            };
+        }
+        case 'ADD_ARTIST_IMAGE': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: { ...activeData, artistImages: [...activeData.artistImages, action.payload] }
+                }
+            };
+        }
+        case 'SET_MONEY': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: { ...activeData, money: action.payload.newAmount }
+                }
+            };
+        }
+        case 'SET_HYPE': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: { ...activeData, hype: action.payload }
+                }
+            };
+        }
+        case 'SET_POPULARITY': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: { ...activeData, popularity: action.payload }
+                }
+            };
+        }
+        case 'UPDATE_SONG_QUALITY': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: {
+                        ...activeData,
+                        songs: activeData.songs.map(s => s.id === action.payload.songId ? { ...s, quality: action.payload.newQuality } : s)
+                    }
+                }
+            };
+        }
+        case 'TOGGLE_GOLD_THEME': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: { ...activeData, isGoldTheme: action.payload.enabled }
+                }
+            };
+        }
+        case 'UNLOCK_RED_MIC_PRO': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: { ...activeData, redMicPro: { ...activeData.redMicPro, unlocked: true, subscriptionType: action.payload.type } }
+                }
+            };
+        }
+        case 'SET_PRO_HYPE_MODE': {
+            if (!state.activeArtistId) return state;
+            const activeData = state.artistsData[state.activeArtistId];
+            return {
+                ...state,
+                artistsData: {
+                    ...state.artistsData,
+                    [state.activeArtistId]: { ...activeData, redMicPro: { ...activeData.redMicPro, hypeMode: action.payload } }
+                }
+            };
         }
         case 'LOAD_GAME': return action.payload;
         case 'RESET_GAME': return initialState;
@@ -232,7 +349,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
 };
 
-export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [gameState, dispatch] = useReducer(gameReducer, initialState);
     const allPlayerArtists = useMemo(() => {
         if (gameState.careerMode === 'solo' && gameState.soloArtist) return [gameState.soloArtist];

@@ -1,6 +1,4 @@
-
-
-import React from 'react';
+import * as React from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import StartScreen from './components/StartScreen';
 import GameUI from './components/GameUI';
@@ -26,7 +24,6 @@ import XView from './components/XView';
 import XProfileView from './components/XProfileView';
 import XChatView from './components/XChatView';
 import SpotifyForArtistsView from './components/SpotifyForArtistsView';
-import './utils/xContentGenerator';
 import CreateFallonPerformanceView from './components/CreateFallonPerformanceView';
 import CreateFallonInterviewView from './components/CreateFallonInterviewView';
 import SpotifyAlbumCountdownView from './components/SpotifyAlbumCountdownView';
@@ -84,140 +81,73 @@ const AppContent: React.FC = () => {
 
     const renderView = () => {
         switch (currentView) {
-            case 'spotify':
-                return <SpotifyView />;
-            case 'spotifyAlbumCountdown':
-                return <SpotifyAlbumCountdownView />;
-            case 'spotifyForArtists':
-                return <SpotifyForArtistsView />;
-            case 'spotifyWrapped':
-                return <SpotifyWrappedView />;
-            case 'studio':
-                return <StudioView />;
-            case 'release':
-                return <ReleaseView />;
-            case 'releaseHub':
-                return <ReleaseHubView />;
-            case 'pitchfork':
-                return <PitchforkView />;
-            case 'youtube':
-                return <YouTubeView />;
-            case 'youtubeVideoDetail':
-                return <YouTubeVideoDetailView />;
-            case 'createVideo':
-                return <CreateVideoView />;
-            case 'merchStore':
-                return <YouTubeStoreView />;
-            case 'youtubeStudio':
-                return <YouTubeStudioView />;
-            case 'inbox':
-                return <InboxView />;
-            case 'catalog':
-                return <CatalogView />;
-            case 'promote':
-                return <PromoteView />;
-            case 'billboard':
-                return <BillboardView />;
-            case 'billboardAlbums':
-                return <BillboardAlbumsView />;
-            case 'spotifyChart':
-                return <SpotifyChartView />;
-            case 'hotPopSongs':
-                return <HotPopSongsView />;
-            case 'hotRapRnb':
-                return <HotRapRnbView />;
-            case 'electronicChart':
-                return <ElectronicChartView />;
-            case 'countryChart':
-                return <CountryChartView />;
-            case 'spotifyTopSongs':
-                return <SpotifyTopSongsView />;
-            case 'spotifyTopAlbums':
-                return <SpotifyTopAlbumsView />;
-            case 'gigs':
-                return <GigsView />;
-            case 'tours':
-                return <ToursView />;
-            case 'createTour':
-                return <CreateTourView />;
-            case 'tourDetail':
-                return <TourDetailView />;
-            case 'labels':
-                return <LabelsView />;
-            case 'labelReleasePlan':
-                return <LabelReleasePlanView />;
-            case 'createLabel':
-                return <CreateLabelView />;
-            case 'albumPromo':
-                return <AlbumPromoView />;
-            case 'achievements':
-                return <AchievementsView />;
-            case 'chartHistory':
-                return <ChartHistoryView />;
-            case 'albumSalesChart':
-                return <AlbumSalesChartView />;
-            case 'createGeniusInterview':
-                return <CreateGeniusInterviewView />;
-            case 'createOnTheRadarPerformance':
-                return <CreateOnTheRadarPerformanceView />;
-            case 'createTrshdPerformance':
-                return <CreateTrshdPerformanceView />;
-            case 'createFallonPerformance':
-                return <CreateFallonPerformanceView />;
-            case 'createFallonInterview':
-                return <CreateFallonInterviewView />;
-            case 'createFeature':
-                return <CreateFeatureView />;
-            case 'x':
-                return <XView />;
-            case 'xProfile':
-                return <XProfileView />;
-            case 'xChatDetail':
-                return <XChatView />;
-            case 'redMicProUnlock':
-                return <RedMicProUnlockView />;
-            case 'redMicProDashboard':
-                return <RedMicProDashboardView />;
-            case 'wikipedia':
-                return <WikipediaView />;
-            case 'grammys':
-                return <GrammysView />;
-            case 'submitForGrammys':
-                return <SubmitForGrammysView />;
-            case 'createGrammyPerformance':
-                return <CreateGrammyPerformanceView />;
-            case 'grammyRedCarpet':
-                return <GrammyRedCarpetView />;
-            case 'oscars':
-                return <OscarsView />;
-            case 'submitForOscars':
-                return <SubmitForOscarsView />;
-            case 'createOscarPerformance':
-                return <CreateOscarPerformanceView />;
-            case 'contractRenewal':
-                return <ContractRenewalView />;
-            case 'itunes':
-                return <ITunesView />;
-            case 'appleMusic':
-                return <AppleMusicView />;
-            case 'onlyfansSetup':
-                return <OnlyFansSetupView />;
-            case 'onlyfans':
-                return <OnlyFansView />;
-            case 'createOnlyFansPost':
-                return <CreateOnlyFansPostView />;
-            case 'createSoundtrack':
-                return <CreateSoundtrackView />;
-            case 'spotifySoundtrackDetail':
-                return <SpotifySoundtrackDetailView />;
-            case 'gameGuide':
-                return <GameGuideView />;
-            case 'management':
-                return <ManagementView />;
-            case 'security':
-                return <SecurityView />;
-            case 'createVogueFeature':
-                return <CreateVogueFeatureView />;
+            case 'spotify': return <SpotifyView />;
+            case 'spotifyAlbumCountdown': return <SpotifyAlbumCountdownView />;
+            case 'spotifyForArtists': return <SpotifyForArtistsView />;
+            case 'spotifyWrapped': return <SpotifyWrappedView />;
+            case 'studio': return <StudioView />;
+            case 'release': return <ReleaseView />;
+            case 'releaseHub': return <ReleaseHubView />;
+            case 'pitchfork': return <PitchforkView />;
+            case 'youtube': return <YouTubeView />;
+            case 'youtubeVideoDetail': return <YouTubeVideoDetailView />;
+            case 'createVideo': return <CreateVideoView />;
+            case 'merchStore': return <YouTubeStoreView />;
+            case 'youtubeStudio': return <YouTubeStudioView />;
+            case 'inbox': return <InboxView />;
+            case 'catalog': return <CatalogView />;
+            case 'promote': return <PromoteView />;
+            case 'billboard': return <BillboardView />;
+            case 'billboardAlbums': return <BillboardAlbumsView />;
+            case 'spotifyChart': return <SpotifyChartView />;
+            case 'hotPopSongs': return <HotPopSongsView />;
+            case 'hotRapRnb': return <HotRapRnbView />;
+            case 'electronicChart': return <ElectronicChartView />;
+            case 'countryChart': return <CountryChartView />;
+            case 'spotifyTopSongs': return <SpotifyTopSongsView />;
+            case 'spotifyTopAlbums': return <SpotifyTopAlbumsView />;
+            case 'gigs': return <GigsView />;
+            case 'tours': return <ToursView />;
+            case 'createTour': return <CreateTourView />;
+            case 'tourDetail': return <TourDetailView />;
+            case 'labels': return <LabelsView />;
+            case 'labelReleasePlan': return <LabelReleasePlanView />;
+            case 'createLabel': return <CreateLabelView />;
+            case 'albumPromo': return <AlbumPromoView />;
+            case 'achievements': return <AchievementsView />;
+            case 'chartHistory': return <ChartHistoryView />;
+            case 'albumSalesChart': return <AlbumSalesChartView />;
+            case 'createGeniusInterview': return <CreateGeniusInterviewView />;
+            case 'createOnTheRadarPerformance': return <CreateOnTheRadarPerformanceView />;
+            case 'createTrshdPerformance': return <CreateTrshdPerformanceView />;
+            case 'createFallonPerformance': return <CreateFallonPerformanceView />;
+            case 'createFallonInterview': return <CreateFallonInterviewView />;
+            case 'createFeature': return <CreateFeatureView />;
+            case 'x': return <XView />;
+            case 'xProfile': return <XProfileView />;
+            case 'xChatDetail': return <XChatView />;
+            case 'redMicProUnlock': return <RedMicProUnlockView />;
+            case 'redMicProDashboard': return <RedMicProDashboardView />;
+            case 'wikipedia': return <WikipediaView />;
+            case 'grammys': return <GrammysView />;
+            case 'submitForGrammys': return <SubmitForGrammysView />;
+            case 'createGrammyPerformance': return <CreateGrammyPerformanceView />;
+            case 'grammyRedCarpet': return <GrammyRedCarpetView />;
+            case 'oscars': return <OscarsView />;
+            case 'submitForOscars': return <SubmitForOscarsView />;
+            case 'createOscarPerformance': return <CreateOscarPerformanceView />;
+            case 'contractRenewal': return <ContractRenewalView />;
+            case 'itunes': return <ITunesView />;
+            case 'appleMusic': return <AppleMusicView />;
+            case 'onlyfansSetup': return <OnlyFansSetupView />;
+            case 'onlyfans': return <OnlyFansView />;
+            case 'createOnlyFansPost': return <CreateOnlyFansPostView />;
+            case 'createSoundtrack': return <CreateSoundtrackView />;
+            case 'spotifySoundtrackDetail': return <SpotifySoundtrackDetailView />;
+            case 'gameGuide': return <GameGuideView />;
+            case 'management': return <ManagementView />;
+            case 'security': return <SecurityView />;
+            case 'createVogueFeature': return <CreateVogueFeatureView />;
             case 'game':
             default:
                 return <GameUI />;

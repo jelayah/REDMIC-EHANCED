@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef } from 'react';
 import { useGame, formatNumber } from '../context/GameContext';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';

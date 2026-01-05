@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
 import { GameDate, Song } from '../types';
@@ -44,7 +43,8 @@ const LabelReleasePlanView: React.FC = () => {
     };
 
     const handleSingleDateChange = (songId: string, part: 'week' | 'year', value: number) => {
-        const newSelection = new Map(selectedSingles);
+        // Fix: Explicitly type the new Map to maintain correct generics and avoid unknown type inference
+        const newSelection = new Map<string, GameDate>(selectedSingles);
         const currentDate = newSelection.get(songId);
         if (currentDate) {
             // Fix: Replaced dynamic property assignment with explicit properties to resolve type error
